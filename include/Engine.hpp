@@ -5,25 +5,25 @@
 #include <glm/ext/vector_uint4.hpp>
 #include "ShaderClass.hpp"
 #include "camera.h"
-#include "Scene.hpp"
+#include "ResourceManager.hpp"
+#include "SceneManager.hpp"
+#include "RenderSystem.hpp"
+#include "PixelPicker.hpp"
 
 class Engine{
 public:
     Engine(int HEIGHT, int WIDTH, const char* WINDOW_NAME);
     static void framebuffer_size_callback(GLFWwindow* WINDOW, int WIDTH, int HEIGHT);
     static void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
-
-    void setupShader(const char* VERTEX_SHADER, const char* FRAGMENT_SHADER);
+    static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
     void Update();
     bool isRunning();
 private:
     GLFWwindow* window;
     Camera* MainCamera;
-
-    //----------------------------MAP CLASS----------------------------------//
-    SceneManager* sceneMgr;
-
+    glm::mat4 projection;
+    glm::mat4 view;
     // Input Variables
     bool CURSOR_HIDDEN;
     bool TAB_WAS_PRESSED;
@@ -35,11 +35,31 @@ private:
     float deltaTime;
     float lastFrame;
 
-    // Object Selection
-    void BufferSetup();
-    void PostUpdate();
-    Shader* SelectionShader;
+    bool leftMousePressed = false;
+    bool isDragging = false;
+    unsigned int selectedModelID = 0;
+    float dragDepth = 0.0f;
+    glm::vec3 grabOffset = glm::vec3(0.0f);
 
+    // Rewrite Testing
+    ResourceManager resourceMgr;
+    SceneManager sceneMgr;
+    RenderSystem renderer;
+    PixelPicker* picker;
+    uint32_t testEntityID; // Keep track of the test object
+    uint32_t testEntity2;
+
+    // Skybox Rendering
+    unsigned int generateSkyboxVAO();
+
+    // Shadow Mapping
+    Shader* shadowShader;
+    ShadowMapFBO* directionalShadowMap;
+
+    // Object Selection
+    unsigned int pixelPickingShaderID;
+    Shader* OutlineShader;
+    void BufferSetup();
 
     // Private Functions
     bool initGLFW();
@@ -47,4 +67,8 @@ private:
     void CameraSetup();
     void DeltaTimeCalculation();
     void ProcessMovement(GLFWwindow* window);
+    glm::vec3 getWorldPosFromMouse(double mouseX, double mouseY, float dragDepth);
+    
+    void PerformSelection();
+    void DeselectAll();
 };

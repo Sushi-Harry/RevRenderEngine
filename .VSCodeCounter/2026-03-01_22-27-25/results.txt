@@ -1,0 +1,94 @@
+Date : 2026-03-01 22:27:25
+Directory : /home/harry/Projects/RenderingEngine_rewrite4
+Total : 54 files,  2138 codes, 203 comments, 493 blanks, all 2834 lines
+
+Languages
++--------------+------------+------------+------------+------------+------------+
+| language     | files      | code       | comment    | blank      | total      |
++--------------+------------+------------+------------+------------+------------+
+| C++          |         22 |      1,285 |        136 |        272 |      1,693 |
+| GLSL         |         26 |        572 |         55 |        191 |        818 |
+| JSON         |          1 |        210 |          0 |          1 |        211 |
+| Makefile     |          1 |         23 |         10 |         11 |         44 |
+| Shell Script |          2 |         21 |          2 |         10 |         33 |
+| Markdown     |          1 |         18 |          0 |          4 |         22 |
+| Ini          |          1 |          9 |          0 |          4 |         13 |
++--------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                     | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                        |         54 |      2,138 |        203 |        493 |      2,834 |
+| . (Files)                                                                                                |          5 |        268 |         10 |         21 |        299 |
+| BASE_SHADERS                                                                                             |          2 |        116 |         15 |         37 |        168 |
+| MiscTools                                                                                                |          2 |         21 |          2 |         10 |         33 |
+| include                                                                                                  |         39 |      1,479 |        145 |        343 |      1,967 |
+| include (Files)                                                                                          |         21 |      1,277 |        136 |        271 |      1,684 |
+| include/Essentials                                                                                       |         18 |        202 |          9 |         72 |        283 |
+| include/Essentials (Files)                                                                               |          4 |         51 |          8 |         23 |         82 |
+| include/Essentials/ImpShaders                                                                            |          9 |         63 |          1 |         20 |         84 |
+| include/Essentials/PostprocessingShaders                                                                 |          5 |         88 |          0 |         29 |        117 |
+| shaders                                                                                                  |          6 |        254 |         31 |         82 |        367 |
++----------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+
+| filename                                                                                                 | language     | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+
+| /home/harry/Projects/RenderingEngine_rewrite4/BASE_SHADERS/LIT_BASE_SHADER.fs                            | GLSL         |         99 |         15 |         33 |        147 |
+| /home/harry/Projects/RenderingEngine_rewrite4/BASE_SHADERS/LIT_BASE_SHADER.vs                            | GLSL         |         17 |          0 |          4 |         21 |
+| /home/harry/Projects/RenderingEngine_rewrite4/MiscTools/createLitShader.sh                               | Shell Script |         11 |          1 |          5 |         17 |
+| /home/harry/Projects/RenderingEngine_rewrite4/MiscTools/normalizeColorCoordinates.sh                     | Shell Script |         10 |          1 |          5 |         16 |
+| /home/harry/Projects/RenderingEngine_rewrite4/README.md                                                  | Markdown     |         18 |          0 |          4 |         22 |
+| /home/harry/Projects/RenderingEngine_rewrite4/compile_commands.json                                      | JSON         |        210 |          0 |          1 |        211 |
+| /home/harry/Projects/RenderingEngine_rewrite4/imgui.ini                                                  | Ini          |          9 |          0 |          4 |         13 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Components.hpp                                     | C++          |         33 |          1 |          6 |         40 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Engine.cpp                                         | C++          |        193 |         25 |         44 |        262 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Engine.hpp                                         | C++          |         51 |          5 |          8 |         64 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/defaultShader.fs             | GLSL         |          7 |          0 |          3 |         10 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/defaultShader.vs             | GLSL         |         12 |          0 |          4 |         16 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/outline.fs                   | GLSL         |          5 |          0 |          0 |          5 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/outline.vs                   | GLSL         |          8 |          0 |          0 |          8 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/pixelPicker.fs               | GLSL         |          6 |          0 |          4 |         10 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/pixelPicker.vs               | GLSL         |          8 |          0 |          3 |         11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/shadowMapping.fs             | GLSL         |          4 |          1 |          1 |          6 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/shadowMapping.vs             | GLSL         |          8 |          0 |          2 |         10 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/stencilBuffer.fs             | GLSL         |          5 |          0 |          3 |          8 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/PostprocessingShaders/colorInversion.fs | GLSL         |          7 |          0 |          4 |         11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/PostprocessingShaders/gaussianBlur.fs   | GLSL         |         32 |          0 |          8 |         40 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/PostprocessingShaders/grayscale.fs      | GLSL         |          9 |          0 |          6 |         15 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/PostprocessingShaders/screenQuad.vs     | GLSL         |          8 |          0 |          3 |         11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/PostprocessingShaders/sharpen.fs        | GLSL         |         32 |          0 |          8 |         40 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/Skybox.fs                               | GLSL         |          7 |          0 |          4 |         11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/Skybox.vs                               | GLSL         |         12 |          1 |          3 |         16 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/grid.fs                                 | GLSL         |         21 |          7 |         12 |         40 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/grid.vs                                 | GLSL         |         11 |          0 |          4 |         15 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Framebuffer_Shadowmap.cpp                          | C++          |         17 |          1 |          4 |         22 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Framebuffer_Shadowmap.hpp                          | C++          |         12 |          0 |          5 |         17 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Grid.cpp                                           | C++          |         46 |          1 |         12 |         59 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Grid.hpp                                           | C++          |         12 |          0 |          3 |         15 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/ModelLoader.cpp                                    | C++          |         85 |         13 |         19 |        117 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/ModelLoader.hpp                                    | C++          |         14 |          0 |          5 |         19 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/PixelPicker.cpp                                    | C++          |         46 |          2 |         16 |         64 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/PixelPicker.hpp                                    | C++          |         18 |          0 |          5 |         23 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/RenderSystem.hpp                                   | C++          |         76 |         14 |         14 |        104 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/ResourceManager.hpp                                | C++          |         62 |          2 |         10 |         74 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/SceneManager.hpp                                   | C++          |         34 |          7 |          9 |         50 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/ShaderClass.hpp                                    | C++          |        157 |         29 |          9 |        195 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Skybox.cpp                                         | C++          |        115 |          1 |         21 |        137 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Skybox.hpp                                         | C++          |         18 |          0 |          7 |         25 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/TextureLoader.hpp                                  | C++          |         43 |          2 |          9 |         54 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/camera.h                                           | C++          |        101 |         20 |         17 |        138 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/lights.cpp                                         | C++          |         83 |          5 |         20 |        108 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/lights.hpp                                         | C++          |         61 |          8 |         28 |         97 |
+| /home/harry/Projects/RenderingEngine_rewrite4/main.cpp                                                   | C++          |          8 |          0 |          1 |          9 |
+| /home/harry/Projects/RenderingEngine_rewrite4/makefile                                                   | Makefile     |         23 |         10 |         11 |         44 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/cyborgShader.fs                                    | GLSL         |         99 |         15 |         33 |        147 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/cyborgShader.vs                                    | GLSL         |         17 |          0 |          4 |         21 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/flatSurface.fs                                     | GLSL         |         99 |         15 |         33 |        147 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/flatSurface.vs                                     | GLSL         |         16 |          0 |          5 |         21 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/sun.fs                                             | GLSL         |         10 |          1 |          4 |         15 |
+| /home/harry/Projects/RenderingEngine_rewrite4/shaders/sun.vs                                             | GLSL         |         13 |          0 |          3 |         16 |
+| Total                                                                                                    |              |      2,138 |        203 |        493 |      2,834 |
++----------------------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+

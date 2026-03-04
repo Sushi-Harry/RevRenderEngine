@@ -1,0 +1,37 @@
+Date : 2026-03-01 21:13:36
+Directory : /home/harry/Projects/RenderingEngine_rewrite4
+Total : 9 files,  113 codes, 8 comments, 24 blanks, all 145 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |          5 |        113 |          8 |         24 |        145 |
+| GLSL     |          4 |          0 |          0 |          0 |          0 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                         | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                            |          9 |        113 |          8 |         24 |        145 |
+| include                                                                                      |          9 |        113 |          8 |         24 |        145 |
+| include/Essentials                                                                           |          4 |          0 |          0 |          0 |          0 |
+| include/Essentials/ImpShaders                                                                |          4 |          0 |          0 |          0 |          0 |
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                     | language | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Engine.cpp                             | C++      |         27 |          6 |          3 |         36 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Engine.hpp                             | C++      |          3 |          0 |         -2 |          1 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/pixelPicker.fs   | GLSL     |          6 |          0 |          4 |         10 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/pixelPicker.vs   | GLSL     |          8 |          0 |          3 |         11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/selectionMode.fs | GLSL     |         -6 |          0 |         -4 |        -10 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/Essentials/ImpShaders/selectionMode.vs | GLSL     |         -8 |          0 |         -3 |        -11 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/PixelPicker.cpp                        | C++      |         46 |          2 |         16 |         64 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/PixelPicker.hpp                        | C++      |         18 |          0 |          5 |         23 |
+| /home/harry/Projects/RenderingEngine_rewrite4/include/RenderSystem.hpp                       | C++      |         19 |          0 |          2 |         21 |
+| Total                                                                                        |          |        113 |          8 |         24 |        145 |
++----------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

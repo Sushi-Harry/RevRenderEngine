@@ -33,6 +33,7 @@ void DirectionalLight::setName(std::string NAME){
 }
 
 //----------------------------------------POINT-LIGHT----------------------------------------//
+
 void PointLight::SetShader(Shader &SHADER){
     SHADER.setBool("pntLight.enabled", enabled);
     SHADER.setVec3("pntLight.color", color);
@@ -66,6 +67,10 @@ void PointLight::setName(std::string NAME){
 }
 
 //----------------------------------------SPOT-LIGHT--------------------------------------------//
+SpotLight::SpotLight(glm::vec3 position){
+    this->position = position;
+}
+
 void SpotLight::SetShader(Shader &SHADER){
     SHADER.setBool("SpotLight1.enabled", enabled);
     SHADER.setVec3("SpotLight1.position", position);

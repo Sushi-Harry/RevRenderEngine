@@ -37,5 +37,7 @@ clean:
 run: all
 	./$(TARGET)
 
+remake: clean run
+
 # Phony targets
 .PHONY: all clean run

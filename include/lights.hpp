@@ -8,7 +8,7 @@
 using namespace glm;
 
 class DirectionalLight {
-  public:
+  public:  
     void SetShader(Shader &SHADER);
     void setName(std::string NAME);
 
@@ -22,6 +22,11 @@ class DirectionalLight {
     float specular = 1.0f;
     float diffuse = 1.0f;
     float ambient = 0.05f;
+
+    // Shadow Mapping Data
+    mat4 projection;
+    mat4 view;
+
     void takeInput();
 
   private:
@@ -47,6 +52,11 @@ class PointLight {
     float constant = 1.0f;
     float linear = 0.09f;
     float quadratic = 0.0032f;
+
+    // Shadow Mapping Data
+    mat4 projection;
+    mat4 view;
+
     void takeInput();
 
   private:
@@ -55,6 +65,9 @@ class PointLight {
 class SpotLight {
 
   public:
+
+    SpotLight(glm::vec3 position);
+
     void SetShader(Shader &SHADER);
     void setName(std::string NAME);
 

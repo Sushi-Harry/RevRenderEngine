@@ -1,5 +1,5 @@
 // This is borrowed from learnopengl.com
-// I wrote nothing in this file. (Didn't even follow along to that tutorial cause I'm lazy)
+// I wrote nothing in this file. (Didn't even follow along to that tutorial cause I'm lazy) -- Clarification: I've done this multiple times for small projects so that's why I didn't write it on my own this time
 
 #ifndef CAMERA_H
 #define CAMERA_H
@@ -42,6 +42,9 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+    // Proj. Matrix
+    glm::mat4 Projection;
+
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
@@ -65,6 +68,10 @@ public:
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front, Up);
+    }
+
+    glm::mat4 GetProjectionMatrix(){
+        return Projection;
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)

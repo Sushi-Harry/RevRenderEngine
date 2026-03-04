@@ -1,9 +1,0 @@
-To DO:
-- The stencil buffer class is complete so now add a way to actually use that class in the engine class directly. (Not through the scene class)
-
------ TRY AGAIN -------
-DOESN"T WORK RIGHT NOW
-
-Still Doesn't work. Figured out the problem
-For some reason (idk) the color picking thing works without the uniforms in the base shader being set but it picks unexpected data when the models
-are drawn with the lighting uniforms being set.
