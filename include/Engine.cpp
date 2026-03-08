@@ -4,6 +4,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -51,6 +55,7 @@ Engine::Engine(int HEIGHT, int WIDTH, const char *WINDOW_NAME) {
     // Remove framelimit
     glfwSwapInterval(0);
 
+    initIMGUI();
     
     // Physics Setup
     physicsWorld = physicsCommon.createPhysicsWorld();
@@ -106,6 +111,158 @@ void Engine::mouse_button_callback(GLFWwindow* window, int button, int action, i
     }
 }
 
+void Engine::initIMGUI(){
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();   (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 430 core");
+}
+
+void Engine::imgui_startFrame(){
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+void Engine::imgui_UI(){
+    ImGui::Begin("Engine Controls");
+    ImGui::Text("Performance: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    if (ImGui::CollapsingHeader("Physics Engine")) {
+        // A simple checkbox to toggle your debug wireframes!
+        static bool showDebug = true;
+        if (ImGui::Checkbox("Show Debug Wireframes", &showDebug)) {
+            physicsWorld->setIsDebugRenderingEnabled(showDebug);
+        }
+    }
+    ImGui::End();
+
+    //================================================//
+    //========ENTITY INSPECTOR========================//
+    //================================================//
+    ImGui::Begin("Entity Inspector");
+    ImGui::Text("Selected Entity: ID %d", selectedModelID);
+    ImGui::Separator();
+
+    // Graphical Properties
+    if(sceneMgr.transforms.count(selectedModelID)){
+        Transform& t = sceneMgr.transforms[selectedModelID];
+        ImGui::Text("GRAPHIC TRANSFORMATIONS");
+        ImGui::DragFloat3("Scale", glm::value_ptr(t.scale), 0.05f, 0.1f, 100.0f);
+    }
+    // Physics Component Properties
+    if(sceneMgr.rigidBodies.count(selectedModelID)){
+        ImGui::Separator();
+        ImGui::Text("Physics Properties");
+
+        rp3d::RigidBody* body = sceneMgr.rigidBodies[selectedModelID].body;
+        if(body){
+            rp3d::Transform currentTransform = body->getTransform();
+            rp3d::Vector3 pos = currentTransform.getPosition();
+
+            float posArray[3] = {
+                static_cast<float>(pos.x),
+                static_cast<float>(pos.y),
+                static_cast<float>(pos.z)
+            };
+            if(ImGui::DragFloat3("Position", posArray, 0.1f)){
+                currentTransform.setPosition(rp3d::Vector3(posArray[0], posArray[1], posArray[2]));
+                body->setTransform(currentTransform);
+                body->setIsActive(true);
+            }
+
+            // boounciness 
+            if(body->getNbColliders() > 0){
+                rp3d::Collider* collider = body->getCollider(0);
+                rp3d::Material& material = collider->getMaterial();
+
+                float bounciness = material.getBounciness();
+                if(ImGui::SliderFloat("Bounciness", &bounciness, 0.0f, 1.0f)){
+                    material.setBounciness(bounciness);
+                }
+            }
+        }
+    }else{
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "No entity selected.");
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Click an object in the scene!");
+    }
+    ImGui::End();
+
+    //================================================//
+    //========CONTENT BROWSER=========================//
+    //================================================//
+    ImGui::Begin("Content Browser");
+    static char spawnPath[256] = "";
+    static float spawnLoc[3] = {0.0f, 0.0f, 0.0f};
+    static int physicsType = 1; // 0 = none, 1 = Dynamic box, 2 = static mesh
+
+    ImGui::Text("Spawn New Entity");
+    ImGui::Separator();
+    ImGui::InputText("Model Path", spawnPath, 256);
+    ImGui::DragFloat3("Spawn Position", spawnLoc, 0.1f);
+    ImGui::Text("Physics Body Type");
+    ImGui::RadioButton("None", &physicsType, 0); ImGui::SameLine();
+    ImGui::RadioButton("Dynamic", &physicsType, 1); ImGui::SameLine();
+    ImGui::RadioButton("Static", &physicsType, 2);
+
+    ImGui::Spacing();
+
+    if(ImGui::Button("ADD ENTITY", ImVec2(-1.0, 30.0))){
+        unsigned int shaderID = resourceMgr.loadShader("default", "include/Essentials/ImpShaders/defaultShader.vs", "include/Essentials/ImpShaders/defaultShader.fs");
+
+        // Add the entitty
+        glm::vec3 pos(spawnLoc[0], spawnLoc[1], spawnLoc[2]);
+        uint32_t newID = sceneMgr.addEntity(spawnPath, pos, shaderID, resourceMgr);
+        sceneMgr.transforms[newID].scale = glm::vec3(1.0f);
+        sceneMgr.transforms[newID].pos = pos;
+
+        if(physicsType > 0){
+            rp3d::Transform startTransform(rp3d::Vector3(pos.x, pos.y, pos.z), rp3d::Quaternion::identity());
+            rp3d::RigidBody* body = physicsWorld->createRigidBody(startTransform);
+            body->setIsDebugEnabled(true);
+
+            if(physicsType == 1){
+                body->setType(rp3d::BodyType::DYNAMIC);
+                rp3d::BoxShape* boxShape = physicsCommon.createBoxShape(rp3d::Vector3(1.0, 1.0, 1.0));
+                body->addCollider(boxShape, rp3d::Transform::identity());
+            }else if(physicsType == 2){
+                body->setType(rp3d::BodyType::KINEMATIC);
+                const auto& verts = resourceMgr.getVertices(spawnPath);
+                const auto& inds = resourceMgr.getIndices(spawnPath);
+                
+                if (!verts.empty() && !inds.empty()) {
+                    rp3d::TriangleVertexArray* triArray = new rp3d::TriangleVertexArray(
+                        verts.size(), &(verts[0].position.x), sizeof(VertexComponent),
+                        inds.size() / 3, inds.data(), 3 * sizeof(uint32_t),
+                        rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                        rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE
+                    );
+                    
+                    std::vector<rp3d::Message> messages;
+                    rp3d::TriangleMesh* phyMesh = physicsCommon.createTriangleMesh(*triArray, messages);
+                    rp3d::ConcaveMeshShape* concaveMesh = physicsCommon.createConcaveMeshShape(phyMesh);
+                    body->addCollider(concaveMesh, rp3d::Transform::identity());
+                } else {
+                    std::cout << "[WARNING] Could not load physics mesh for " << spawnPath << std::endl;
+                }
+            }
+
+            sceneMgr.rigidBodies[newID] = RigidBodyComponent{body};
+        }
+
+        DeselectAll();
+        sceneMgr.meshes[newID].isSelected = true;   
+        selectedModelID = newID;
+    }
+    ImGui::End();
+}
+
+void Engine::imgui_endFrame(){
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 bool Engine::initGLFW() {
     if (!glfwInit()) {
         return false;
@@ -114,8 +271,8 @@ bool Engine::initGLFW() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
+    
     return true;
-    ;
 }
 
 bool Engine::initGLEW() {
@@ -174,6 +331,10 @@ void Engine::ProcessMovement(GLFWwindow *window) {
 }
 
 void Engine::debug_render_physics(){
+    if(!physicsWorld->getIsDebugRenderingEnabled()){
+        return;
+    }
+
     // get the renderer first
     rp3d::DebugRenderer& debugRenderer = physicsWorld->getDebugRenderer();
     debugRenderer.computeDebugRenderingPrimitives(*physicsWorld);
@@ -244,7 +405,7 @@ void Engine::debug_render_physics(){
         glEnable(GL_DEPTH_TEST);
         glBindVertexArray(0);
     }
-    std::cout << "Lines: " << numLines << " | Triangles: " << numTriangles << std::endl;
+    // std::cout << "Lines: " << numLines << " | Triangles: " << numTriangles << std::endl;
 }
 
 void Engine::Update() {
@@ -259,11 +420,14 @@ void Engine::Update() {
     
     double xPos, yPos;
     glfwGetCursorPos(window, &xPos, &yPos);
-
+    
     // 1. handle the initial click
+    ImGuiIO& io = ImGui::GetIO();
     if(leftMousePressed && !isDragging){
-        PerformSelection();
-        isDragging = true;
+        if(!io.WantCaptureMouse){
+            PerformSelection();
+            isDragging = true;
+        }
     }
     // 2. Handle the dragging here
     if(leftMousePressed && isDragging && selectedModelID != 0){
@@ -313,6 +477,11 @@ void Engine::Update() {
 
     // Debug Renderer
     debug_render_physics();
+
+    // Get the GUI Working
+    imgui_startFrame();
+    imgui_UI();
+    imgui_endFrame();
 
     glfwSwapBuffers(window);
     glfwPollEvents();

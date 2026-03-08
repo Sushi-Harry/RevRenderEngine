@@ -85,4 +85,9 @@ private:
     void debug_init_physics();
     void debug_render_physics();
 
+    // GUI
+    void initIMGUI();
+    void imgui_startFrame();
+    void imgui_UI();
+    void imgui_endFrame();
 };
