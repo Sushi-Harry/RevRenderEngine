@@ -6,7 +6,7 @@
 
 class SceneManager{
 public:
-    uint32_t addEntity(const std::string& meshPath, glm::vec3 position, unsigned int shaderID){
+    uint32_t addEntity(const std::string& meshPath, glm::vec3 position, unsigned int shaderID, ResourceManager& resourceMgr){
         uint32_t id = nextEntityID++;
 
         // Get geometry data from resourcemgr
@@ -22,19 +22,23 @@ public:
         recalculateMatrix_byID(id);        
         return id;
     }
-    
 
     // Drawing will be done in RenderSystem. Below is the matrix recalculation function
     void recalculateMatrix_byID(unsigned int ID){
         transforms[ID].modelMatrix = glm::mat4(1.0f);
-        transforms[ID].modelMatrix = glm::scale(transforms[ID].modelMatrix, transforms[ID].scale);
         transforms[ID].modelMatrix = glm::translate(transforms[ID].modelMatrix, transforms[ID].pos);
+        glm::mat4 rotation = glm::mat4_cast(transforms[ID].rotationQuaternion);
+        transforms[ID].modelMatrix = rotation * transforms[ID].modelMatrix;
+        transforms[ID].modelMatrix = glm::scale(transforms[ID].modelMatrix, transforms[ID].scale);
     }
 
     void recalculateMatrix(){
         for(auto& [id, t] : transforms){
-            // only do this if the object doesn't have a parent
-            updateNodeMatrix(id, glm::mat4(1.0f));
+            if (t.parent == 0) {
+                if(!rigidBodies.count(id)){
+                    updateNodeMatrix(id, glm::mat4(1.0f));
+                }
+            }
         }
     }
 
@@ -71,9 +75,11 @@ public:
     // multiple point lights and spot lights are possible so:
     std::unordered_map<uint32_t, PointLightComponent> pointLights;
     std::unordered_map<uint32_t, SpotLightComponents> spotLights;
+
+    // Physics Components
+    std::unordered_map<uint32_t, RigidBodyComponent> rigidBodies;
 private:
     uint32_t nextEntityID = 1;    
-    ResourceManager resourceMgr;
 
     // See this shit? Recursive and shit man 
     void updateNodeMatrix(uint32_t entityID, const glm::mat4& parentWorldMatrix){
@@ -82,7 +88,7 @@ private:
         glm::mat4 local = glm::mat4(1.0f);
         // Position
         local = glm::translate(local, t.pos);
-        // Gonna skip rotation for now
+        // Skipping rotation for now
         // Here's scaling
         local = glm::scale(local, t.scale);
         t.localMatrix = local;

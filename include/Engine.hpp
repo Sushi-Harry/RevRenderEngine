@@ -9,6 +9,7 @@
 #include "SceneManager.hpp"
 #include "RenderSystem.hpp"
 #include "PixelPicker.hpp"
+#include <reactphysics3d/reactphysics3d.h>
 
 class Engine{
 public:
@@ -32,7 +33,7 @@ private:
     // Delta Time Implementation
     float lastX, lastY;
     bool firstMouse;
-    float deltaTime;
+    float deltaTime = 0.0f;
     float lastFrame;
 
     bool leftMousePressed = false;
@@ -40,6 +41,10 @@ private:
     unsigned int selectedModelID = 0;
     float dragDepth = 0.0f;
     glm::vec3 grabOffset = glm::vec3(0.0f);
+
+    // React Physics 3D
+    rp3d::PhysicsCommon physicsCommon;
+    rp3d::PhysicsWorld* physicsWorld;
 
     // Rewrite Testing
     ResourceManager resourceMgr;
@@ -61,7 +66,7 @@ private:
     Shader* OutlineShader;
     void BufferSetup();
 
-    // Private Functions
+    // Private Utility Functions
     bool initGLFW();
     bool initGLEW();
     void CameraSetup();
@@ -69,6 +74,15 @@ private:
     void ProcessMovement(GLFWwindow* window);
     glm::vec3 getWorldPosFromMouse(double mouseX, double mouseY, float dragDepth);
     
+    // Selection functions
     void PerformSelection();
     void DeselectAll();
+
+    // Physics Simulation
+    float accumulator = 0.0f;
+    void SyncPhysicsToGraphics();
+    unsigned int debugVAO, debugVBO, debugShaderID;
+    void debug_init_physics();
+    void debug_render_physics();
+
 };

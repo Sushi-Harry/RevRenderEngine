@@ -12,12 +12,17 @@ MeshComponent ModelLoader::loadToGPU(const std::string& path, ResourceManager& r
     }
 
     MeshComponent modelContainer;
-    ProcessNode(scene->mRootNode, scene, modelContainer, directory, resMgr);
+    std::vector<VertexComponent> globalVertices;
+    std::vector<uint32_t> globalIndices;
+    ProcessNode(scene->mRootNode, scene, modelContainer, directory, resMgr, globalVertices, globalIndices);
+
+    //---------------ADD MESH DATA TO THE PHYSICS ENGINE----------------//
+    resMgr.addPhysicsMeshData(path, globalVertices, globalIndices);
 
     return modelContainer;
 }
 
-SubMesh ModelLoader::uploadMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory, ResourceManager& resMgr){
+SubMesh ModelLoader::uploadMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory, ResourceManager& resMgr, std::vector<VertexComponent>& globalVertices, std::vector<uint32_t>& globalIndices){
     std::vector<VertexComponent> vertices;
     std::vector<unsigned int> indices;
     std::vector<TextureComponent> textures;
@@ -54,6 +59,15 @@ SubMesh ModelLoader::uploadMesh(aiMesh* mesh, const aiScene* scene, const std::s
             for(unsigned int j = 0; j < face.mNumIndices; j++){
                 indices.push_back(face.mIndices[j]);
             }
+        }
+
+        // Extraction of vertex data and applying proper offsets to give the data to the physics engine eventually
+        unsigned int offset = globalVertices.size();
+        // inserting the vertex data into the global vertices
+        globalVertices.insert(globalVertices.end(), vertices.begin(), vertices.end());
+        // inserting the index data into the global indices
+        for(unsigned int idx : indices){
+            globalIndices.push_back(idx + offset);
         }
 
         // Texture data
@@ -104,15 +118,15 @@ SubMesh ModelLoader::uploadMesh(aiMesh* mesh, const aiScene* scene, const std::s
     return { VAO, (unsigned int)indices.size(), textureID};
 }
 
-void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene, MeshComponent& container, const std::string& directory, ResourceManager& resMgr){
+void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene, MeshComponent& container, const std::string& directory, ResourceManager& resMgr, std::vector<VertexComponent>& globalVertices, std::vector<uint32_t>& globalIndices){
     // Processing all the meshes first
     for(unsigned int i = 0; i < node->mNumMeshes; i++){
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        container.subMeshes.push_back(uploadMesh(mesh, scene, directory, resMgr));
+        container.subMeshes.push_back(uploadMesh(mesh, scene, directory, resMgr, globalVertices, globalIndices));
     }
 
     // Recursively process children
     for(unsigned int i = 0; i < node->mNumChildren; i ++){
-        ProcessNode(node->mChildren[i], scene, container, directory, resMgr);
+        ProcessNode(node->mChildren[i], scene, container, directory, resMgr, globalVertices, globalIndices);
     }
 }

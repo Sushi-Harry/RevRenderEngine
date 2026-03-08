@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+const double FIXED_TIME_STEP = 1.0 / 60.0;
+
 Engine::Engine(int HEIGHT, int WIDTH, const char *WINDOW_NAME) {
 
     // For later use
@@ -49,6 +51,14 @@ Engine::Engine(int HEIGHT, int WIDTH, const char *WINDOW_NAME) {
     // Remove framelimit
     glfwSwapInterval(0);
 
+    
+    // Physics Setup
+    physicsWorld = physicsCommon.createPhysicsWorld();
+    // Test that it worked by printing the default gravity
+    rp3d::Vector3 gravity = physicsWorld->getGravity();
+    std::cout << "Physics Engine Initialized! Gravity: " 
+    << gravity.x << ", " << gravity.y << ", " << gravity.z << std::endl;
+    
     //-------------------CAMERA----------------------------//
     CameraSetup();
     //--------------------Selection Mode Stuff---------------------//
@@ -57,7 +67,7 @@ Engine::Engine(int HEIGHT, int WIDTH, const char *WINDOW_NAME) {
 
 void Engine::framebuffer_size_callback(GLFWwindow *WINDOW, int WIDTH, int HEIGHT) {
     Engine *engineInstance =
-        static_cast<Engine *>(glfwGetWindowUserPointer(WINDOW));
+    static_cast<Engine *>(glfwGetWindowUserPointer(WINDOW));
     if (engineInstance) {
         glViewport(0, 0, WIDTH, HEIGHT);
     }
@@ -163,8 +173,89 @@ void Engine::ProcessMovement(GLFWwindow *window) {
 
 }
 
+void Engine::debug_render_physics(){
+    // get the renderer first
+    rp3d::DebugRenderer& debugRenderer = physicsWorld->getDebugRenderer();
+    debugRenderer.computeDebugRenderingPrimitives(*physicsWorld);
+    // get the number of lines
+    uint32_t numLines = debugRenderer.getNbLines();
+    uint32_t numTriangles = debugRenderer.getNbTriangles();
+
+    if(numLines > 0 || numTriangles > 0){
+        std::vector<float> lineVertices;
+        // Opengl uses float but rp3d uses double so yk, we gotta do some ricebag conversion type shit
+        lineVertices.reserve((numLines * 6) + (numTriangles * 9)); // Reserve the space first. 2 points per line. 3 floats per point. So 3*2 = 6
+        
+        //==========================EXTRACTING THE LINE DATA==================================//
+        if(numLines > 0){
+            const rp3d::DebugRenderer::DebugLine* lines = debugRenderer.getLinesArray();
+            for(uint32_t i = 0; i < numLines; i++){
+                lineVertices.push_back(static_cast<float>(lines[i].point1.x));
+                lineVertices.push_back(static_cast<float>(lines[i].point1.y));
+                lineVertices.push_back(static_cast<float>(lines[i].point1.z));
+
+                lineVertices.push_back(static_cast<float>(lines[i].point2.x));
+                lineVertices.push_back(static_cast<float>(lines[i].point2.y));
+                lineVertices.push_back(static_cast<float>(lines[i].point2.z));
+            }
+        }
+        //==========================EXTRACTING THE TRIANGLES DATA==================================//
+        if(numTriangles > 0){
+            const rp3d::DebugRenderer::DebugTriangle* triangles = debugRenderer.getTrianglesArray();
+            for(uint32_t i = 0; i < numTriangles; i++){
+                // Point 1
+                lineVertices.push_back(static_cast<float>(triangles[i].point1.x));
+                lineVertices.push_back(static_cast<float>(triangles[i].point1.y));
+                lineVertices.push_back(static_cast<float>(triangles[i].point1.z));
+
+                lineVertices.push_back(static_cast<float>(triangles[i].point2.x));
+                lineVertices.push_back(static_cast<float>(triangles[i].point2.y));
+                lineVertices.push_back(static_cast<float>(triangles[i].point2.z));
+
+                lineVertices.push_back(static_cast<float>(triangles[i].point3.x));
+                lineVertices.push_back(static_cast<float>(triangles[i].point3.y));
+                lineVertices.push_back(static_cast<float>(triangles[i].point3.z));
+            }
+        }
+
+        // now we hand it over to the gpu
+        glBindVertexArray(debugVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+        glBufferData(GL_ARRAY_BUFFER, lineVertices.size() * sizeof(float), lineVertices.data(), GL_DYNAMIC_DRAW);
+
+        Shader* debugShader = resourceMgr.getShader(debugShaderID);
+        debugShader->use();
+        debugShader->setMat4("view", MainCamera->GetViewMatrix());
+        debugShader->setMat4("projection", MainCamera->GetProjectionMatrix());
+
+        // Turn off depth testing so lines draw OVER the solid meshes
+        glDisable(GL_DEPTH_TEST);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        
+        if(numLines > 0){
+            glDrawArrays(GL_LINES, 0, numLines * 2);
+        }
+        if(numTriangles > 0){
+            glDrawArrays(GL_TRIANGLES, numLines*2, numTriangles*3);
+        }
+        
+        // Turn it back on for the next frame
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_DEPTH_TEST);
+        glBindVertexArray(0);
+    }
+    std::cout << "Lines: " << numLines << " | Triangles: " << numTriangles << std::endl;
+}
+
 void Engine::Update() {
     DeltaTimeCalculation();
+    // This is the accumulator loop. This part of the code makes the physics engine independent of the renderer's framerate
+    accumulator += deltaTime;
+    while(accumulator >= FIXED_TIME_STEP){
+        physicsWorld->update(FIXED_TIME_STEP);
+        accumulator -= FIXED_TIME_STEP;
+    }
+    SyncPhysicsToGraphics();
     
     double xPos, yPos;
     glfwGetCursorPos(window, &xPos, &yPos);
@@ -179,12 +270,29 @@ void Engine::Update() {
         glm::vec3 newWorldPos = getWorldPosFromMouse(xPos, yPos, dragDepth);
         glm::vec3 targetPos = newWorldPos + grabOffset;
 
-        float dragSpeed = 3000.0f * deltaTime;
+        float dragSpeed = 1.0;
 
         dragSpeed = glm::clamp(dragSpeed, 0.0f, 1.0f);
 
         glm::vec3& currentPos = sceneMgr.transforms[selectedModelID].pos;
         currentPos = currentPos + (targetPos - currentPos) * dragSpeed;
+
+        // Making it match with the physics world
+        if(sceneMgr.rigidBodies.count(selectedModelID)){
+            rp3d::RigidBody* body = sceneMgr.rigidBodies[selectedModelID].body;
+            if(body){
+                rp3d::Transform currentPhyTransform = body->getTransform();
+                
+                // Update the position based on the currntPos vector
+                currentPhyTransform.setPosition(rp3d::Vector3(currentPos.x, currentPos.y, currentPos.z));
+                body->setTransform(currentPhyTransform);
+
+                // Reset the velocity too
+                body->setLinearVelocity(rp3d::Vector3(0.0, 0.0, 0.0));
+                body->setAngularVelocity(rp3d::Vector3(0.0, 0.0, 0.0));
+                
+            }
+        }
     }
     // Handle the release
     if(!leftMousePressed){
@@ -203,11 +311,40 @@ void Engine::Update() {
     // Draw the Scene
     renderer.draw(sceneMgr, resourceMgr, *MainCamera, *OutlineShader, *shadowShader, *directionalShadowMap, width, height);
 
+    // Debug Renderer
+    debug_render_physics();
+
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
 
+void Engine::debug_init_physics(){
+    glGenVertexArrays(1, &debugVAO);
+    glGenBuffers(1, &debugVBO);
+    glBindVertexArray(debugVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+    // We use GL_DYNAMIC_DRAW because the lines change every frame!
+    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
+
+    // 3. Turn on the Physics Debugger
+    physicsWorld->setIsDebugRenderingEnabled(true);
+    rp3d::DebugRenderer& debugRenderer = physicsWorld->getDebugRenderer();
+
+    // Tell it exactly what you want to see (i.e., the collision shapes)
+    debugRenderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+    debugRenderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, false);
+}
+
 void Engine::BufferSetup() {
+    // debuguguguguguguggingg
+    debugShaderID = resourceMgr.loadShader("debugPhysics", "include/Essentials/debug/physics.debug.vs", "include/Essentials/debug/physics.debug.fs");
+    debug_init_physics();
+    // Enable debug rendering
+    physicsWorld->setIsDebugRenderingEnabled(true);
+
     // Directional Shadow Mapping
     directionalShadowMap = new ShadowMapFBO();
     shadowShader = new Shader("include/Essentials/ImpShaders/depthShader.vs", "include/Essentials/ImpShaders/depthShader.fs");
@@ -230,16 +367,68 @@ void Engine::BufferSetup() {
     picker = new PixelPicker(width, height);
     unsigned int defaultShader = resourceMgr.loadShader("default", "include/Essentials/ImpShaders/defaultShader.vs", "include/Essentials/ImpShaders/defaultShader.fs");
     pixelPickingShaderID = resourceMgr.loadShader("pixelPicker", "include/Essentials/ImpShaders/pixelPicker.vs", "include/Essentials/ImpShaders/pixelPicker.fs");
-    // Adding Entity
-    testEntityID = sceneMgr.addEntity("models/cyborg/cyborg.obj", glm::vec3(0.0f, 0.0f, -3.0f), defaultShader);
+    
+    // Physics Setup
+    // This is the test subject - Cyborg
+    std::string cyborgPath = "models/cyborg/cyborg.obj";
+    testEntityID = sceneMgr.addEntity(cyborgPath, glm::vec3(0.0f, 5.0f, -3.0f), defaultShader, resourceMgr);
     sceneMgr.transforms[testEntityID].scale = glm::vec3(1.0f);
-    sceneMgr.transforms[testEntityID].pos = glm::vec3(0.0f, 0.0f, -3.0f);
-    testEntity2 = sceneMgr.addEntity("models/FlatPlane/flatPlane.obj", glm::vec3(0.0f, 0.0f, -4.0f), defaultShader);
-    sceneMgr.transforms[testEntity2].scale = glm::vec3(1.0f);
-    sceneMgr.transforms[testEntity2].pos = glm::vec3(2.0f, 0.0f, 0.0f);
+    sceneMgr.transforms[testEntityID].pos = glm::vec3(0.0f, 5.0f, -3.0f);
+    
+    rp3d::Transform cyTransform(rp3d::Vector3(0.0f, 5.0f, -3.0f), rp3d::Quaternion::identity());
+    rp3d::RigidBody* cybody = physicsWorld->createRigidBody(cyTransform);
+    cybody->setType(rp3d::BodyType::DYNAMIC);
+    cybody->setIsDebugEnabled(true);
 
-    // Testing out the parent setting function
-    sceneMgr.setParent(testEntity2, testEntityID);
+    // 1. DYNAMIC BODIES MUST USE CONVEX SHAPES (Box, Sphere, Capsule)
+    rp3d::BoxShape* cyborgBox = physicsCommon.createBoxShape(rp3d::Vector3(1.0, 2.0, 0.3));
+    
+    // 2. You can shift the box so it aligns with the visual mesh
+    rp3d::Transform localOffset(rp3d::Vector3(0.0, 2.0, 0.0), rp3d::Quaternion::identity());
+    
+    rp3d::Collider* cyCollider = cybody->addCollider(cyborgBox, localOffset);
+    rp3d::Material& material = cyCollider->getMaterial();
+    material.setBounciness(0.5);
+    
+    sceneMgr.rigidBodies[testEntityID] = RigidBodyComponent{ cybody };
+
+    // This acts as the floor - Terrain model - Mesh Accurate
+    std::string terrainPath = "models/ground_flat/flat_plane.obj";
+    // 1. Move the floor to Z = -3.0 so it sits perfectly beneath the cyborg
+    testEntity2 = sceneMgr.addEntity(terrainPath.c_str(), glm::vec3(0.0f, -2.0f, -3.0f), defaultShader, resourceMgr);
+    // 2. Make it visually massive
+    sceneMgr.transforms[testEntity2].scale = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneMgr.transforms[testEntity2].pos = glm::vec3(0.0f, -2.0f, -3.0f);
+    // 3. Match the physics starting position
+    rp3d::Transform floorTransform(rp3d::Vector3(0.0, -2.0, -3.0), rp3d::Quaternion::identity());
+    rp3d::RigidBody* floorBody = physicsWorld->createRigidBody(floorTransform);
+    const auto& cpuVertices = resourceMgr.getVertices(terrainPath);
+    const auto& cpuIndices = resourceMgr.getIndices(terrainPath);
+    if (!cpuVertices.empty() && !cpuIndices.empty()) {
+        rp3d::TriangleVertexArray* triangleArray = new rp3d::TriangleVertexArray(
+            cpuVertices.size(),
+            &(cpuVertices[0].position.x),
+            sizeof(VertexComponent),
+            cpuIndices.size() / 3,
+            cpuIndices.data(),
+            3*sizeof(uint32_t),
+            rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+            rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE
+        );
+        
+        std::vector<rp3d::Message> messages;
+        rp3d::TriangleMesh* phyMesh = physicsCommon.createTriangleMesh(*triangleArray, messages);
+        rp3d::ConcaveMeshShape* concaveMesh = physicsCommon.createConcaveMeshShape(phyMesh);
+
+        // 4. CRITICAL FIX: Tell the physics engine to stretch the mesh to match your graphics scale!
+        concaveMesh->setScale(rp3d::Vector3(1.0, 1.0, 1.0));
+
+        // attach the collider
+        floorBody->addCollider(concaveMesh, rp3d::Transform::identity());
+        floorBody->setType(rp3d::BodyType::KINEMATIC);
+        floorBody->setIsDebugEnabled(true);
+        sceneMgr.rigidBodies[testEntity2] = RigidBodyComponent{ floorBody };
+    }
 
     // Outlining using stencil shader
     OutlineShader = new Shader("include/Essentials/ImpShaders/outline.vs", "include/Essentials/ImpShaders/outline.fs");
@@ -364,4 +553,32 @@ glm::vec3 Engine::getWorldPosFromMouse(double mouseX, double mouseY, float depth
     glm::vec3 worldPos = glm::unProject(screenPos, MainCamera->GetViewMatrix(), MainCamera->GetProjectionMatrix(), viewport);
 
     return worldPos;
+}
+
+void Engine::SyncPhysicsToGraphics(){
+    for(auto& [id, rb] : sceneMgr.rigidBodies){
+        if(sceneMgr.transforms.count(id) && rb.body != nullptr){
+            Transform& t = sceneMgr.transforms[id];
+            const rp3d::Transform& phyTransform = rb.body->getTransform();
+
+            // First, we sync the position
+            const rp3d::Vector3& pos = phyTransform.getPosition();
+            t.pos = glm::vec3(pos.x, pos.y, pos.z);
+
+            // Get the 4x4 matrix - This shit is a pain in the ass cause I decided to use the AUR packages that expects doubles instead of floats EVERYWHERE
+            rp3d::decimal glMat[16];
+            phyTransform.getOpenGLMatrix(glMat);
+
+            // Convert this matrix to glm matrix
+            glm::mat4 phyMat;
+            float* matPtr = glm::value_ptr(phyMat);
+            for(int i = 0; i < 16; i++){
+                matPtr[i] = static_cast<float>(glMat[i]);
+            }
+
+            // Just apply the scale to the object since rp3d handles translation and rotation
+            t.modelMatrix = glm::scale(phyMat, t.scale);
+            
+        }
+    }
 }

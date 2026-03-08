@@ -13,7 +13,7 @@ class ModelLoader{
 public:
     MeshComponent loadToGPU(const std::string& path, ResourceManager& resMgr);
 private:
-    SubMesh uploadMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory, ResourceManager& resMgr);
+    SubMesh uploadMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory, ResourceManager& resMgr, std::vector<VertexComponent>& globalVertices, std::vector<uint32_t>& globalIndices);
     
-    void ProcessNode(aiNode* node, const aiScene* scene, MeshComponent& container, const std::string& directory, ResourceManager& resMgr);
+    void ProcessNode(aiNode* node, const aiScene* scene, MeshComponent& container, const std::string& directory, ResourceManager& resMgr, std::vector<VertexComponent>& globalVertices, std::vector<uint32_t>& globalIndices);
 };

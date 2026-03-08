@@ -1,7 +1,7 @@
 #include "include/Engine.hpp"
 
 int main(){
-    Engine newEngine(720, 1280, "main");
+    Engine newEngine(900, 1600, "main");
     while (newEngine.isRunning()) {
         newEngine.Update();
     }

@@ -1,9 +1,9 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude -DIS_RP3D_DOUBLE_PRECISION_ENABLED
 
 # Libraries
-LIBS := -lglfw -lGLEW -lGL -lm -ldl -lpthread -lassimp
+LIBS := -lglfw -lGLEW -lGL -lm -ldl -lpthread -lassimp -lreactphysics3d
 
 # Directories
 SRC_DIR = include

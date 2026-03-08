@@ -1,0 +1,37 @@
+Date : 2026-03-08 10:21:10
+Directory : /home/harry/Projects/RevRenderEngine
+Total : 8 files,  199 codes, 41 comments, 49 blanks, all 289 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |          6 |        187 |         41 |         49 |        277 |
+| GLSL     |          2 |         12 |          0 |          0 |         12 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                           | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                              |          8 |        199 |         41 |         49 |        289 |
+| include                                                                        |          8 |        199 |         41 |         49 |        289 |
+| include (Files)                                                                |          6 |        187 |         41 |         49 |        277 |
+| include/Essentials                                                             |          2 |         12 |          0 |          0 |         12 |
+| include/Essentials/debug                                                       |          2 |         12 |          0 |          0 |         12 |
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                       | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /home/harry/Projects/RevRenderEngine/include/Components.hpp                    | C++      |          7 |          1 |          2 |         10 |
+| /home/harry/Projects/RevRenderEngine/include/Engine.cpp                        | C++      |        146 |         33 |         38 |        217 |
+| /home/harry/Projects/RevRenderEngine/include/Engine.hpp                        | C++      |          8 |          3 |          3 |         14 |
+| /home/harry/Projects/RevRenderEngine/include/Essentials/debug/physics.debug.fs | GLSL     |          5 |          0 |          0 |          5 |
+| /home/harry/Projects/RevRenderEngine/include/Essentials/debug/physics.debug.vs | GLSL     |          7 |          0 |          0 |          7 |
+| /home/harry/Projects/RevRenderEngine/include/ModelLoader.cpp                   | C++      |          8 |          4 |          2 |         14 |
+| /home/harry/Projects/RevRenderEngine/include/ResourceManager.hpp               | C++      |         12 |          0 |          4 |         16 |
+| /home/harry/Projects/RevRenderEngine/include/SceneManager.hpp                  | C++      |          6 |          0 |          0 |          6 |
+| Total                                                                          |          |        199 |         41 |         49 |        289 |
++--------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

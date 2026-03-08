@@ -74,6 +74,20 @@ public:
         cubemap_cache[name] = newID;
         return newID;
     }
+
+    void addPhysicsMeshData(const std::string& path, const std::vector<VertexComponent>& vertices, const std::vector<unsigned int>& indices){
+        vertexCache[path] = vertices;
+        indexCache[path] = indices;
+    }
+
+    const std::vector<VertexComponent>& getVertices(const std::string& path){
+        return vertexCache[path];
+    }
+
+    const std::vector<uint32_t>& getIndices(const std::string& path){
+        return indexCache[path];
+    }
+
 private:
     ModelLoader loader;
     std::unordered_map<std::string, MeshComponent> cache;
@@ -82,5 +96,7 @@ private:
     std::unordered_map<std::string, unsigned int> shaderIDs;
     std::unordered_map<unsigned int, Shader*> shaderByID;
     std::unordered_map<std::string, unsigned int> cubemap_cache;
+    std::unordered_map<std::string, std::vector<VertexComponent>> vertexCache;
+    std::unordered_map<std::string, std::vector<uint32_t>> indexCache;
     unsigned int nextShader = 1;
 };

@@ -3,8 +3,11 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
+
+#include <reactphysics3d/reactphysics3d.h>
 
 // Components
 struct SubMesh{
@@ -37,6 +40,8 @@ struct Transform{
     glm::vec3 rot = glm::vec3(0.0f);;
     glm::vec3 scale = glm::vec3(1.0f);
 
+    // Quaternion for later use
+    glm::quat rotationQuaternion;
     // Bound to the world or the parent 
     glm::mat4 localMatrix = glm::mat4(1.0f);
     // Final calculated matrix
@@ -96,4 +101,9 @@ struct SkyboxComponent{
     unsigned int VAO;
     unsigned int cubemapID = 0;
     unsigned int shaderID = 0;
+};
+
+struct RigidBodyComponent{
+    rp3d::RigidBody* body = nullptr;
+    rp3d::CollisionShape* shape = nullptr;
 };
